@@ -1,10 +1,10 @@
-[English](README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
+[English](../README.md) | [简体中文](README-zh.md) | [繁體中文](README-zh-Hant.md) | [Русский](README-ru.md)
 
 # EmbedCrate
 
 **開源、自託管的文字向量化與重排序 API。**
 
-[![建置狀態](https://github.com/hwdsl2/embedcrate/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/embedcrate/actions/workflows/main.yml) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-embeddings-server.svg)](https://hub.docker.com/r/hwdsl2/embeddings-server) &nbsp;[![License: MIT](docs/images/license.svg)](https://opensource.org/licenses/MIT)
+[![建置狀態](https://github.com/hwdsl2/embedcrate/actions/workflows/main.yml/badge.svg)](https://github.com/hwdsl2/embedcrate/actions/workflows/main.yml) &nbsp;[![Docker Pulls](https://raw.githubusercontent.com/hwdsl2/badges/main/img/docker-pulls-embeddings-server.svg)](https://hub.docker.com/r/hwdsl2/embeddings-server) &nbsp;[![License: MIT](images/license.svg)](https://opensource.org/licenses/MIT)
 
 使用 EmbedCrate 在自己的伺服器上執行文字向量化和重排序服務。由 [Hugging Face Text Embeddings Inference (TEI)](https://github.com/huggingface/text-embeddings-inference) 驅動，提供相容於 OpenAI 的 `/v1/embeddings` API 和可選的 `/rerank` 端點，支援模型設定和持久化快取。
 
@@ -20,13 +20,13 @@
 - **離線執行：** 使用預先快取的模型無需網際網路連線 (`EMBED_LOCAL_ONLY`)
 - **自動建置：** 透過 [GitHub Actions](https://github.com/hwdsl2/embedcrate/actions) 自動建置並發布
 
-也可作為 [Self-Hosted AI Stack](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README-zh-Hant.md) 的一部分使用，一條命令即可部署完整的自託管 AI 技術堆疊。
+也可作為 [Self-Hosted AI Stack](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/docs/README-zh-Hant.md) 的一部分使用，一條命令即可部署完整的自託管 AI 技術堆疊。
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) 是一本關於建置、保護和維運自己的私有 AI 技術堆疊的實用指南。
 
 **另提供：**
 
-- 相關 AI 服務：[ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/README-zh-Hant.md)、[SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/README-zh-Hant.md)、[GatewayCrate](https://github.com/hwdsl2/gatewaycrate/blob/main/README-zh-Hant.md)、[InferCrate](https://github.com/hwdsl2/infercrate/blob/main/README-zh-Hant.md)、[ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/README-zh-Hant.md)、[UplinkCrate](https://github.com/hwdsl2/uplinkcrate/blob/main/README-zh-Hant.md)
+- 相關 AI 服務：[ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh-Hant.md)、[SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh-Hant.md)、[GatewayCrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh-Hant.md)、[InferCrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh-Hant.md)、[ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-zh-Hant.md)、[UplinkCrate](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh-Hant.md)
 
 ## 快速開始
 
@@ -81,9 +81,9 @@ curl http://您的伺服器IP:8000/v1/embeddings \
 
 - [Setup IPsec VPN](https://github.com/hwdsl2/setup-ipsec-vpn/blob/master/README-zh-Hant.md)
 - [Docker 上的 IPsec VPN](https://github.com/hwdsl2/docker-ipsec-vpn-server/blob/master/README-zh-Hant.md)
-- [WireGuard](https://github.com/hwdsl2/docker-wireguard/blob/main/README-zh-Hant.md)
-- [OpenVPN](https://github.com/hwdsl2/docker-openvpn/blob/main/README-zh-Hant.md)
-- [Headscale](https://github.com/hwdsl2/docker-headscale/blob/main/README-zh-Hant.md)
+- [WireGuard](https://github.com/hwdsl2/docker-wireguard/blob/main/docs/README-zh-Hant.md)
+- [OpenVPN](https://github.com/hwdsl2/docker-openvpn/blob/main/docs/README-zh-Hant.md)
+- [Headscale](https://github.com/hwdsl2/docker-headscale/blob/main/docs/README-zh-Hant.md)
 
 </details>
 
@@ -117,7 +117,7 @@ docker image tag quay.io/hwdsl2/embeddings-server hwdsl2/embeddings-server
 
 所有變數均為選填。掛載 `/var/lib/embeddings` 資料卷的新安裝會自動產生 Bearer 令牌。沒有金鑰的既有安裝會保持開放以相容舊行為。
 
-此 Docker 映像使用以下變數，可在 `env` 檔案中宣告（參見[範例](embed.env.example)）：
+此 Docker 映像使用以下變數，可在 `env` 檔案中宣告（參見[範例](../embed.env.example)）：
 
 | 變數 | 說明 | 預設值 |
 |---|---|---|
@@ -571,7 +571,7 @@ docker rm -f embeddings
 
 Embeddings 可作為更廣泛的自託管 AI 設定中的嵌入服務。
 
-如需完整和輕量級 Docker Compose 技術堆疊、手動 `docker run` 範例，以及結合 SpeakCrate、EmbedCrate、GatewayCrate、InferCrate、ParseCrate 和 UplinkCrate 的語音/RAG/MCP 流水線範例，請參閱 [Self-Hosted AI Stack](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/README-zh-Hant.md)。
+如需完整和輕量級 Docker Compose 技術堆疊、手動 `docker run` 範例，以及結合 SpeakCrate、EmbedCrate、GatewayCrate、InferCrate、ParseCrate 和 UplinkCrate 的語音/RAG/MCP 流水線範例，請參閱 [Self-Hosted AI Stack](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/docs/README-zh-Hant.md)。
 
 ## 使用計數
 
