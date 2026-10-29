@@ -24,9 +24,11 @@ Also available as part of the [Self-Hosted AI Stack](https://github.com/hwdsl2/s
 
 > 📘 [The Self-Hosted AI Builder’s Guide](https://books2read.com/aiguide?store=amazon) is a practical guide to building, securing, and operating your own private AI stack.
 
-**Also available:**
+**Related AI services:**
 
-- Related AI services: [ScribeCrate](https://github.com/hwdsl2/scribecrate), [SpeakCrate](https://github.com/hwdsl2/speakcrate), [GatewayCrate](https://github.com/hwdsl2/gatewaycrate), [InferCrate](https://github.com/hwdsl2/infercrate), [ParseCrate](https://github.com/hwdsl2/parsecrate), [UplinkCrate](https://github.com/hwdsl2/uplinkcrate)
+- **Voice:** [ScribeCrate](https://github.com/hwdsl2/scribecrate), [SpeakCrate](https://github.com/hwdsl2/speakcrate)
+- **Documents & search:** [ParseCrate](https://github.com/hwdsl2/parsecrate)
+- **Models & gateways:** [InferCrate](https://github.com/hwdsl2/infercrate), [GatewayCrate](https://github.com/hwdsl2/gatewaycrate), [UplinkCrate](https://github.com/hwdsl2/uplinkcrate)
 
 ## Quick start
 
