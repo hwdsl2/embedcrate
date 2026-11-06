@@ -24,12 +24,6 @@
 
 > 📘 **The Self-Hosted AI Builder’s Guide**（[电子书](https://books2read.com/aiguide?store=amazon) · [平装书](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)）是一本关于构建、保护和运维自己的私有 AI 技术栈的实用指南。
 
-**相关 AI 服务：**
-
-- **语音：** [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh.md)、[SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh.md)
-- **文档与检索：** [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-zh.md)
-- **模型与网关：** [InferCrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md)、[GatewayCrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md)、[UplinkCrate](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh.md)
-
 ## 快速开始
 
 使用以下命令启动文本向量化服务器：
@@ -574,6 +568,12 @@ docker rm -f embeddings
 Embeddings 可作为更广泛的自托管 AI 设置中的嵌入服务。
 
 如需完整和轻量级 Docker Compose 技术栈、手动 `docker run` 示例，以及结合 SpeakCrate、EmbedCrate、GatewayCrate、InferCrate、ParseCrate 和 UplinkCrate 的语音/RAG/MCP 流水线示例，请参阅 [Self-Hosted AI Stack](https://github.com/hwdsl2/self-hosted-ai-stack/blob/main/docs/README-zh.md)。
+
+**相关 AI 服务：**
+
+- **语音：** [ScribeCrate](https://github.com/hwdsl2/scribecrate/blob/main/docs/README-zh.md)、[SpeakCrate](https://github.com/hwdsl2/speakcrate/blob/main/docs/README-zh.md)
+- **文档与检索：** [ParseCrate](https://github.com/hwdsl2/parsecrate/blob/main/docs/README-zh.md)
+- **模型与网关：** [InferCrate](https://github.com/hwdsl2/infercrate/blob/main/docs/README-zh.md)、[GatewayCrate](https://github.com/hwdsl2/gatewaycrate/blob/main/docs/README-zh.md)、[UplinkCrate](https://github.com/hwdsl2/uplinkcrate/blob/main/docs/README-zh.md)
 
 ## 使用计数
 

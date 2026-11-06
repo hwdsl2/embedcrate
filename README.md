@@ -24,12 +24,6 @@ Also available as part of the [Self-Hosted AI Stack](https://github.com/hwdsl2/s
 
 > 📘 **The Self-Hosted AI Builder’s Guide** ([ebook](https://books2read.com/aiguide?store=amazon) · [paperback](https://books2read.com/aiguide?store=amazon-paperback&format=PAPERBACK)) is a practical guide to building, securing, and operating your own private AI stack.
 
-**Related AI services:**
-
-- **Voice:** [ScribeCrate](https://github.com/hwdsl2/scribecrate), [SpeakCrate](https://github.com/hwdsl2/speakcrate)
-- **Documents & search:** [ParseCrate](https://github.com/hwdsl2/parsecrate)
-- **Models & gateways:** [InferCrate](https://github.com/hwdsl2/infercrate), [GatewayCrate](https://github.com/hwdsl2/gatewaycrate), [UplinkCrate](https://github.com/hwdsl2/uplinkcrate)
-
 ## Quick start
 
 Use this command to set up a text embeddings server:
@@ -574,6 +568,12 @@ Your downloaded models are preserved in the `embeddings-data` volume.
 Embeddings can be used as the embedding service in a broader self-hosted AI setup.
 
 For full and lightweight Docker Compose stacks, manual `docker run` examples, and voice/RAG/MCP pipeline examples with SpeakCrate, EmbedCrate, GatewayCrate, InferCrate, ParseCrate, and UplinkCrate, see [Self-Hosted AI Stack](https://github.com/hwdsl2/self-hosted-ai-stack).
+
+**Related AI services:**
+
+- **Voice:** [ScribeCrate](https://github.com/hwdsl2/scribecrate), [SpeakCrate](https://github.com/hwdsl2/speakcrate)
+- **Documents & search:** [ParseCrate](https://github.com/hwdsl2/parsecrate)
+- **Models & gateways:** [InferCrate](https://github.com/hwdsl2/infercrate), [GatewayCrate](https://github.com/hwdsl2/gatewaycrate), [UplinkCrate](https://github.com/hwdsl2/uplinkcrate)
 
 ## Usage counts
 
