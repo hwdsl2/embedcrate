@@ -58,15 +58,83 @@ fi
 EMBED_API_KEY_WAS_SET=${EMBED_API_KEY+x}
 RERANK_API_KEY_WAS_SET=${RERANK_API_KEY+x}
 
+# Resolve explicit external inputs before normalization or persistent writes.
+# Begin secret-file helpers
+# Optional external inputs only. Legacy saved-key readers remain in the caller.
+
+secret_error() { printf 'Error: %s\n' "$1" >&2; exit 1; }
+
+secret_resolve() {
+  local name="$1" kind="$2" file_name="${1}_FILE" path value LC_ALL=C header_pattern='^[ -~]+$'
+  printf -v "${name}_FROM_FILE" '%s' ''
+  [[ ${!file_name+x} ]] || return 0
+  [[ ! ${!name+x} ]] || secret_error "$file_name conflicts with $name (even when empty)."
+  path=${!file_name}
+  [[ -n "$path" ]] || secret_error "$file_name must name a nonempty file path."
+  [[ -f "$path" && -r "$path" && -s "$path" ]] \
+    || secret_error "$file_name must name a readable, nonempty regular file."
+  # read retains terminal newlines; a successful NUL-delimited read detects NUL
+  # before Bash can silently discard it. Never source or evaluate secret bytes.
+  if IFS= read -r -d '' value < "$path"; then
+    secret_error "$file_name contains a NUL byte."
+  fi
+  while [[ "$value" == *$'\n' ]]; do
+    value=${value%$'\n'}
+    value=${value%$'\r'}
+  done
+  [[ -n "$value" && "$value" != *[[:cntrl:]]* ]] \
+    || secret_error "$file_name must contain one nonempty line without control characters."
+  # Bearer transports use RFC 6750 b64token; passwords and URLs are text.
+  if [[ "$kind" == bearer && ! "$value" =~ ^[A-Za-z0-9._~+/-]+=*$ ]]; then
+    secret_error "$file_name must contain a single HTTP bearer token."
+  fi
+  if [[ "$kind" == header && ( ! "$value" =~ $header_pattern || "$value" == ' '* || "$value" == *' ' ) ]]; then
+    secret_error "$file_name must contain ASCII header data without leading or trailing spaces."
+  fi
+  printf -v "$name" '%s' "$value"
+  printf -v "${name}_FROM_FILE" '%s' 1
+  export "${name?}"
+}
+
+# A private startup snapshot lets docker exec helpers read the running key even
+# after the source changes. The directory is image-owned, outside data volumes.
+# /run is not assumed to be tmpfs. No live rotation or background work occurs.
+secret_snapshot() {
+  local directory="$1" name="$2" value="$3" enabled="$4" temporary
+  if [[ "$enabled" != 1 ]]; then
+    rm -f -- "$directory/$name" || secret_error "Cannot clear previous runtime secret."
+    return 0
+  fi
+  [[ -d "$directory" && ! -L "$directory" ]] \
+    || secret_error "Private runtime secret directory is unavailable."
+  chmod 700 "$directory" || secret_error "Cannot secure runtime secret directory."
+  temporary=$(mktemp "$directory/.secret.XXXXXX") \
+    || secret_error "Cannot prepare runtime secret."
+  if ! printf '%s' "$value" > "$temporary" || ! chmod 600 "$temporary" \
+    || ! mv -f -- "$temporary" "$directory/$name"; then
+    rm -f -- "$temporary"
+    secret_error "Cannot save runtime secret."
+  fi
+}
+# End secret-file helpers
+
+secret_resolve EMBED_API_KEY bearer
+secret_resolve RERANK_API_KEY bearer
+secret_resolve EMBED_HF_TOKEN bearer
+
 # Read and sanitize environment variables
 EMBED_MODEL=$(nospaces "$EMBED_MODEL")
 EMBED_MODEL=$(noquotes "$EMBED_MODEL")
 EMBED_PORT=$(nospaces "$EMBED_PORT")
 EMBED_PORT=$(noquotes "$EMBED_PORT")
-EMBED_API_KEY=$(nospaces "$EMBED_API_KEY")
-EMBED_API_KEY=$(noquotes "$EMBED_API_KEY")
-EMBED_HF_TOKEN=$(nospaces "$EMBED_HF_TOKEN")
-EMBED_HF_TOKEN=$(noquotes "$EMBED_HF_TOKEN")
+if [ "${EMBED_API_KEY_FROM_FILE:-}" != 1 ]; then
+  EMBED_API_KEY=$(nospaces "$EMBED_API_KEY")
+  EMBED_API_KEY=$(noquotes "$EMBED_API_KEY")
+fi
+if [ "${EMBED_HF_TOKEN_FROM_FILE:-}" != 1 ]; then
+  EMBED_HF_TOKEN=$(nospaces "$EMBED_HF_TOKEN")
+  EMBED_HF_TOKEN=$(noquotes "$EMBED_HF_TOKEN")
+fi
 EMBED_LOCAL_ONLY=$(nospaces "$EMBED_LOCAL_ONLY")
 EMBED_LOCAL_ONLY=$(noquotes "$EMBED_LOCAL_ONLY")
 EMBED_ENABLED=$(nospaces "$EMBED_ENABLED")
@@ -78,8 +146,10 @@ RERANK_MODEL=$(nospaces "$RERANK_MODEL")
 RERANK_MODEL=$(noquotes "$RERANK_MODEL")
 RERANK_PORT=$(nospaces "$RERANK_PORT")
 RERANK_PORT=$(noquotes "$RERANK_PORT")
-RERANK_API_KEY=$(nospaces "$RERANK_API_KEY")
-RERANK_API_KEY=$(noquotes "$RERANK_API_KEY")
+if [ "${RERANK_API_KEY_FROM_FILE:-}" != 1 ]; then
+  RERANK_API_KEY=$(nospaces "$RERANK_API_KEY")
+  RERANK_API_KEY=$(noquotes "$RERANK_API_KEY")
+fi
 
 # Apply defaults
 [ -z "$EMBED_MODEL" ] && EMBED_MODEL=BAAI/bge-small-en-v1.5
@@ -215,7 +285,9 @@ report_usage_counts() {
   fi
 }
 
-if [ -n "$EMBED_API_KEY" ]; then
+if [ "${EMBED_API_KEY_FROM_FILE:-}" = 1 ]; then
+  : # Keep the existing persistent key for rollback to legacy sources.
+elif [ -n "$EMBED_API_KEY" ]; then
   printf '%s' "$EMBED_API_KEY" > "$API_KEY_FILE"
   chmod 600 "$API_KEY_FILE"
 elif [ -z "$EMBED_API_KEY_WAS_SET" ] && [ -f "$API_KEY_FILE" ]; then
@@ -230,7 +302,7 @@ fi
 
 # Resolve reranker API key. When unset, it falls back to EMBED_API_KEY.
 # When explicitly set empty, it remains empty as an intentional no-auth opt-out.
-if [ -z "$RERANK_API_KEY_WAS_SET" ]; then
+if [ -z "$RERANK_API_KEY_WAS_SET" ] && [ "${RERANK_API_KEY_FROM_FILE:-}" != 1 ]; then
   RERANK_API_KEY="$EMBED_API_KEY"
 fi
 
@@ -251,6 +323,15 @@ Pre-download it first: docker exec <container> embed_manage --pullmodel ${RERANK
     fi
   fi
 fi
+
+embed_file_auth=${EMBED_API_KEY_FROM_FILE:-}
+[ "${RERANK_API_KEY_FROM_FILE:-}" != 1 ] || embed_file_auth=1
+embed_helper_key="$EMBED_API_KEY"
+if [ "$embed_active" = 0 ] && [ "$RERANK_API_KEY" != "$EMBED_API_KEY" ]; then
+  embed_helper_key="" # Do not report an unused embeddings key as the reranker key.
+fi
+secret_snapshot /run/embeddings-secrets api_key "$embed_helper_key" "$embed_file_auth"
+secret_snapshot /run/embeddings-secrets hf_token "$EMBED_HF_TOKEN" "${EMBED_HF_TOKEN_FROM_FILE:-}"
 
 # Determine server address for display
 public_ip=$(fetch_public_ip) || public_ip=""

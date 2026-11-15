@@ -75,6 +75,9 @@ check_container() {
 }
 
 load_config() {
+  if [ -f /run/embeddings-secrets/hf_token ]; then
+    EMBED_HF_TOKEN=$(cat /run/embeddings-secrets/hf_token) || exiterr "Cannot read startup HF token."
+  fi
   if [ -z "$EMBED_PORT" ]; then
     if [ -f "$PORT_FILE" ]; then
       EMBED_PORT=$(cat "$PORT_FILE")
@@ -126,6 +129,13 @@ load_config() {
     EMBED_AUTH_ENABLED=$(cat "$EMBED_AUTH_ENABLED_FILE")
   fi
 
+  # Read the startup snapshot, never the possibly edited external file.
+  if [ -f /run/embeddings-secrets/api_key ]; then
+    EMBED_API_KEY=$(cat /run/embeddings-secrets/api_key) || exiterr "Cannot read active API key."
+    EMBED_AUTH_ENABLED=0
+    [ -z "$EMBED_API_KEY" ] || EMBED_AUTH_ENABLED=1
+  fi
+
   if [ "$EMBED_AUTH_ENABLED" != 0 ] && [ -z "$EMBED_API_KEY" ] && [ -f "$API_KEY_FILE" ]; then
     EMBED_API_KEY=$(cat "$API_KEY_FILE")
   fi
@@ -148,6 +158,9 @@ load_config() {
 }
 
 do_show_key() {
+  if [ -f /run/embeddings-secrets/api_key ] && [ -z "$EMBED_API_KEY" ]; then
+    exiterr "No embeddings key is active. A separate reranker key is not reported by this helper."
+  fi
   if [ "$EMBED_AUTH_ENABLED" != 1 ] && [ "$RERANK_AUTH_ENABLED" != 1 ]; then
     exiterr "API key authentication is disabled for this container."
   fi
@@ -172,6 +185,9 @@ do_show_key() {
 }
 
 do_get_key() {
+  if [ -f /run/embeddings-secrets/api_key ] && [ -z "$EMBED_API_KEY" ]; then
+    exit 1
+  fi
   if [ "$EMBED_AUTH_ENABLED" != 1 ] && [ "$RERANK_AUTH_ENABLED" != 1 ]; then
     exit 1
   fi
