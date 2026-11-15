@@ -11,7 +11,7 @@ jobs:
     if: github.repository_owner == 'hwdsl2'
     strategy:
       matrix:
-        test_id: [no-env, with-env, with-key, with-rerank, empty-key, existing-no-key]
+        test_id: [no-env, with-env, with-key, with-file, with-rerank, empty-key, existing-no-key]
       fail-fast: false
     env:
       TEST_ID: ${{ matrix.test_id }}
@@ -30,6 +30,7 @@ jobs:
           set -x
 
           docker build -t embed-test .
+          python3 .github/workflows/tests/check_secret_mounts.py docker embed-test
 
           if [ "$TEST_ID" = "existing-no-key" ]; then
             docker volume create embed-test-data
@@ -66,6 +67,22 @@ jobs:
               -v embed-test-data:/var/lib/embeddings \
               -e EMBED_MODEL=BAAI/bge-small-en-v1.5 \
               -e EMBED_API_KEY=test-embed-key \
+              -p 8000:8000/tcp \
+              -d embed-test
+          elif [ "$TEST_ID" = "with-file" ]; then
+            secret_test_dir=$(mktemp -d)
+            trap 'rm -rf -- "$secret_test_dir"' EXIT
+            printf '%s\r\n' test-embed-key > "$secret_test_dir/api-key"
+            chmod 644 "$secret_test_dir/api-key"
+            printf '%s\n' EMBED_API_KEY_FILE=/run/secrets/api-key > "$secret_test_dir/service.env"
+            docker run \
+              --name "$TEST_ID" \
+              --restart=always \
+              -e EMBED_DISABLE_USAGE_COUNTS=1 \
+              -v embed-test-data:/var/lib/embeddings \
+              -e EMBED_MODEL=BAAI/bge-small-en-v1.5 \
+              -v "$secret_test_dir/api-key:/run/secrets/api-key:ro" \
+              -v "$secret_test_dir/service.env:/embed.env:ro" \
               -p 8000:8000/tcp \
               -d embed-test
           elif [ "$TEST_ID" = "empty-key" ]; then
@@ -127,9 +144,19 @@ jobs:
           # Verify health endpoint
           docker exec "$TEST_ID" curl -sf http://127.0.0.1:8000/health
 
+          if [ "$TEST_ID" = "with-file" ]; then
+            active_key=$(docker exec "$TEST_ID" embed_manage --getkey)
+            [ "$active_key" = test-embed-key ] || { echo "Active file key mismatch"; exit 1; }
+            docker exec "$TEST_ID" test ! -f /var/lib/embeddings/.api_key
+            docker exec "$TEST_ID" test ! -f /var/lib/embeddings/.auto_api_key_created
+            printf '%s' synthetic-inactive-key > "$secret_test_dir/api-key"
+            active_key=$(docker exec "$TEST_ID" embed_manage --getkey)
+            [ "$active_key" = test-embed-key ] || { echo "Helper reread inactive source"; exit 1; }
+          fi
+
           # Build optional auth header args for endpoints that require auth when key is set
           embed_curl_args=()
-          if [ "$TEST_ID" = "with-key" ]; then
+          if { [ "$TEST_ID" = "with-key" ] || [ "$TEST_ID" = "with-file" ]; }; then
             embed_curl_args=(-H "Authorization: Bearer test-embed-key")
           elif [ "$TEST_ID" = "empty-key" ] || [ "$TEST_ID" = "existing-no-key" ]; then
             embed_key=$(docker exec "$TEST_ID" embed_manage --getkey 2>/dev/null || true)
