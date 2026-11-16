@@ -4,6 +4,8 @@ Notable changes to EmbedCrate are documented here.
 
 ## 2026-11-15
 
+Release: `2026.11.1`
+
 ### Added
 
 - Accept mounted secret files through `EMBED_API_KEY_FILE`, `RERANK_API_KEY_FILE`, `EMBED_HF_TOKEN_FILE` with explicit source-conflict and file validation.
