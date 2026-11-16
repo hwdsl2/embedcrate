@@ -1,11 +1,11 @@
 name: build
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/main.yml'
-      - '.github/workflows/tests/check_secret_mounts.py'
       - '.github/workflows/buildx.yml'
       - '.dockerignore'
       - 'Dockerfile'
@@ -30,6 +30,7 @@ jobs:
     uses: ./.github/workflows/arm64_test.yml
 
   buildx:
+    if: github.ref == 'refs/heads/main'
     needs: [shellcheck, embed_test, arm64_test]
     uses: ./.github/workflows/buildx.yml
     with:
